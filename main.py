@@ -25,6 +25,7 @@ class SNAKE:
         self.body_tl = pygame.image.load('Graphics/body_tl.png').convert_alpha()
         self.body_br = pygame.image.load('Graphics/body_br.png').convert_alpha()
         self.body_bl = pygame.image.load('Graphics/body_bl.png').convert_alpha()
+
         self.crunch_sound = pygame.mixer.Sound('Sound/crunch.wav')
 
     def draw_snake(self):
@@ -80,7 +81,7 @@ class SNAKE:
             self.tail = self.tail_down
 
     def move_snake(self):
-        if self.new_block == True:
+        if self.new_block:
             body_copy = self.body[:]
             body_copy.insert(0, body_copy[0] + self.direction)
             self.body = body_copy[:]
@@ -109,8 +110,6 @@ class FRUIT:
         fruit_rect = pygame.Rect(int(self.pos.x * cell_size), int(self.pos.y * cell_size), cell_size, cell_size)
         screen.blit(apple, fruit_rect)
 
-    # pygame.draw.rect(screen,(126,166,114),fruit_rect)
-
     def randomize(self):
         self.x = random.randint(0, cell_number - 1)
         self.y = random.randint(0, cell_number - 1)
@@ -121,6 +120,18 @@ class MAIN:
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT()
+        self.read_high_score()
+
+    def read_high_score(self):
+        try:
+            with open("highscore.txt", "r") as file:
+                self.high_score = int(file.read())
+        except:
+            self.high_score = 0
+
+    def write_high_score(self):
+        with open("highscore.txt", "w") as file:
+            file.write(str(self.high_score))
 
     def update(self):
         self.snake.move_snake()
@@ -157,19 +168,19 @@ class MAIN:
     def draw_grass(self):
         grass_color = (167, 209, 61)
         for row in range(cell_number):
-            if row % 2 == 0:
-                for col in range(cell_number):
-                    if col % 2 == 0:
-                        grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
-                        pygame.draw.rect(screen, grass_color, grass_rect)
-            else:
-                for col in range(cell_number):
-                    if col % 2 != 0:
-                        grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
-                        pygame.draw.rect(screen, grass_color, grass_rect)
+            for col in range(cell_number):
+                if (row + col) % 2 == 0:
+                    grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
+                    pygame.draw.rect(screen, grass_color, grass_rect)
 
     def draw_score(self):
-        score_text = str(len(self.snake.body) - 3)
+        score = len(self.snake.body) - 3
+        if score > self.high_score:
+            self.high_score = score
+            self.write_high_score()
+
+        # Current score (bottom-right)
+        score_text = str(score)
         score_surface = game_font.render(score_text, True, (56, 74, 12))
         score_x = int(cell_size * cell_number - 60)
         score_y = int(cell_size * cell_number - 40)
@@ -183,13 +194,22 @@ class MAIN:
         screen.blit(apple, apple_rect)
         pygame.draw.rect(screen, (56, 74, 12), bg_rect, 2)
 
+        # High Score (top-left)
+        high_score_text = f"High Score: {self.high_score}"
+        high_score_surface = game_font.render(high_score_text, True, (56, 74, 12))
+        high_score_rect = high_score_surface.get_rect(topleft=(10, 10))
+        screen.blit(high_score_surface, high_score_rect)
 
+
+# ---------------------- Pygame Setup ---------------------- #
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
+
 cell_size = 40
 cell_number = 20
 screen = pygame.display.set_mode((cell_number * cell_size, cell_number * cell_size))
 clock = pygame.time.Clock()
+
 apple = pygame.image.load('Graphics/apple.png').convert_alpha()
 game_font = pygame.font.Font('Font/PoetsenOne-Regular.ttf', 25)
 
@@ -198,6 +218,7 @@ pygame.time.set_timer(SCREEN_UPDATE, 150)
 
 main_game = MAIN()
 
+# ---------------------- Main Game Loop ---------------------- #
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -206,18 +227,14 @@ while True:
         if event.type == SCREEN_UPDATE:
             main_game.update()
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                if main_game.snake.direction.y != 1:
-                    main_game.snake.direction = Vector2(0, -1)
-            if event.key == pygame.K_RIGHT:
-                if main_game.snake.direction.x != -1:
-                    main_game.snake.direction = Vector2(1, 0)
-            if event.key == pygame.K_DOWN:
-                if main_game.snake.direction.y != -1:
-                    main_game.snake.direction = Vector2(0, 1)
-            if event.key == pygame.K_LEFT:
-                if main_game.snake.direction.x != 1:
-                    main_game.snake.direction = Vector2(-1, 0)
+            if event.key == pygame.K_UP and main_game.snake.direction.y != 1:
+                main_game.snake.direction = Vector2(0, -1)
+            if event.key == pygame.K_RIGHT and main_game.snake.direction.x != -1:
+                main_game.snake.direction = Vector2(1, 0)
+            if event.key == pygame.K_DOWN and main_game.snake.direction.y != -1:
+                main_game.snake.direction = Vector2(0, 1)
+            if event.key == pygame.K_LEFT and main_game.snake.direction.x != 1:
+                main_game.snake.direction = Vector2(-1, 0)
 
     screen.fill((175, 215, 70))
     main_game.draw_elements()
