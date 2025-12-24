@@ -359,8 +359,8 @@ class MAIN:
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 
-cell_size = 40
-cell_number = 20
+cell_size = 34
+cell_number = 17
 screen_size_x = cell_number * cell_size
 screen_size_y = cell_number * cell_size
 
@@ -413,24 +413,17 @@ while True:
             # --- MAIN MENU controls ---
             if main_game.state == "MAIN_MENU":
                 if event.key == pygame.K_DOWN:
-                    main_game.menu_index = (main_game.menu_index + 1) % 4
-                    if menu_select_sound: menu_select_sound.play()
+                    main_game.menu_index = (main_game.menu_index + 1) % 3
                 elif event.key == pygame.K_UP:
-                    main_game.menu_index = (main_game.menu_index - 1) % 4
-                    if menu_select_sound: menu_select_sound.play()
-                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    main_game.menu_index = (main_game.menu_index - 1) % 3
+                elif event.key == pygame.K_RETURN:
                     sel = main_game.menu_index
-                    if sel == 0:  # Start Game
-                        if menu_select_sound: menu_select_sound.play()
+                    if sel == 0:
                         main_game.start_game()
-                    elif sel == 1:  # Difficulty
+                    elif sel == 1:
                         main_game.difficulty_index = (main_game.difficulty_index + 1) % 3
                         main_game.apply_difficulty_timer()
-                        if menu_select_sound: menu_select_sound.play()
-                    elif sel == 2:  # Skin
-                        main_game.skin_index = 2 if main_game.skin_index == 1 else 1
-                        if menu_select_sound: menu_select_sound.play()
-                    elif sel == 3:  # Quit
+                    elif sel == 2:
                         pygame.quit()
                         sys.exit()
                 # Allow left/right to change options inline
