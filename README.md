@@ -22,7 +22,6 @@ The game includes a start menu, multiple difficulty levels, real-time scoring, a
 ### 1. Clone the repository
 ```bash
 https://github.com/rakibunateed/Hungry_Python.git
-cd Snake_Game
 ```
 ## 🎮 Controls
 
